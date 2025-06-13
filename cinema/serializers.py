@@ -162,8 +162,8 @@ class OrderSerializer(serializers.ModelSerializer):
                 seat=ticket["seat"]
             ).exists():
                 raise serializers.ValidationError(
-                    f"Ticket for seat {ticket["seat"]}, "
-                    f"row {ticket["row"]} is already taken."
+                    f"Ticket for seat {ticket['seat']}, "
+                    f"row {ticket['row']} is already taken."
                 )
 
         return attrs
