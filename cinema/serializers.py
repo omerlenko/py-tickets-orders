@@ -144,6 +144,30 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ("id", "tickets", "created_at")
 
+    def validate(self, attrs):
+        tickets = attrs["tickets"]
+        seen = set()
+
+        for ticket in tickets:
+            key = (ticket["movie_session"], ticket["row"], ticket["seat"])
+            if key in seen:
+                raise serializers.ValidationError(
+                    "There are duplicate tickets in this order."
+                )
+            seen.add(key)
+
+            if Ticket.objects.filter(
+                movie_session=ticket["movie_session"],
+                row=ticket["row"],
+                seat=ticket["seat"]
+            ).exists():
+                raise serializers.ValidationError(
+                    f"Ticket for seat {ticket["seat"]}, "
+                    f"row {ticket["row"]} is already taken."
+                )
+
+        return attrs
+
     def create(self, validated_data):
         with transaction.atomic():
             tickets_data = validated_data.pop("tickets")
